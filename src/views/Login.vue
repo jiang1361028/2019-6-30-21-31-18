@@ -29,6 +29,7 @@
     </div>
 </template>
 <script>
+import { login } from "@/api/user_api.js";
 export default {
      data () {
     return {
@@ -66,7 +67,7 @@ export default {
                 //   将token数据存储到本地
                 localStorage.setItem('heima_manager_token', res.data.data.token)
                 //   跳转
-                this.$router.push({ name: 'home' })
+                this.$router.push({ name: 'Home' })
               } else {
                 this.$message({
                   type: 'warning',
