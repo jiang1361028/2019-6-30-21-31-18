@@ -10,14 +10,13 @@ Vue.config.productionTip = false
 
 router.beforeEach((to, from, next) => {
   var token = localStorage.getItem('heima_manager_token')
-  if(token || to.path === '/login'){
+  if (token || to.path === '/login') {
     next()
-  }else if(!token && to.path !=='/login'){
+  } else if (!token && to.path !== '/login') {
     next({
       name: 'login'
     })
   }
-  
 })
 new Vue({
 

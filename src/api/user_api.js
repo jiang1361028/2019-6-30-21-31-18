@@ -2,10 +2,10 @@ import axios from 'axios'
 
 axios.defaults.baseURL = 'http://localhost:8888/api/private/v1/'
 
-export const login =(data)=>{
-    return axios({
-        method:'post',
-        url:'login',
-        data
-    })
+export const login = (data) => {
+  return axios({
+    method: 'post',
+    url: 'login',
+    data
+  })
 }

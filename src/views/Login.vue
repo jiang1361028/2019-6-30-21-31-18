@@ -29,9 +29,9 @@
     </div>
 </template>
 <script>
-import { login } from "@/api/user_api.js";
+import { login } from '@/api/user_api.js'
 export default {
-     data () {
+  data () {
     return {
       loginForm: {
         username: '',
@@ -52,7 +52,7 @@ export default {
       }
     }
   },
-   methods: {
+  methods: {
     loginsubmit () {
       // 再次实现用户数据的验证
       //   可以调用当前表单的validate函数，当验证完毕的时候，会调用这个函数中的回调函数,它有一个valid的参数
@@ -125,5 +125,3 @@ export default {
   }
 }
 </style>
-
-
