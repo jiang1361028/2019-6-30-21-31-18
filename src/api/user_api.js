@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { type } from 'os'
 // 设置基准路径
 axios.defaults.baseURL = 'http://localhost:8888/api/private/v1/'
 // 添加拦截器
@@ -31,11 +32,25 @@ export const getUserList = (pa) => {
 }
 // 添加新用户
 export const addUser = (data) => {
+  console.log(data)
   return axios({
     method: 'post',
-    uel: 'users',
+    url: 'users',
     data
+  })
+}
+// 修改用户状态
+export const updateUserState = (uid, type) => {
+  return axios({
+    method: 'put',
+    url: `users/${uid}/state/${type}`
 
   })
 }
 // 删除用户
+export const delUser = (id) => {
+  return axios({
+    method: 'delete',
+    url: `users/${id}`
+  })
+}
