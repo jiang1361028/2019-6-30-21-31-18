@@ -34,10 +34,10 @@
       <el-table-column label="操作">
         <template slot-scope="scope">
           <el-tooltip class="item" effect="dark" content="编辑" placement="top">
-            <el-button type="primary" icon="el-icon-edit"></el-button>
+            <el-button type="primary" icon="el-icon-edit" @click="showEditDialog(scope.row)"></el-button>
           </el-tooltip>
           <el-tooltip class="item" effect="dark" content="分配角色" placement="top">
-            <el-button type="primary" icon="el-icon-share"></el-button>
+            <el-button type="primary" icon="el-icon-share" @click="showGrandDialog(scope.row)"></el-button>
           </el-tooltip>
           <el-tooltip class="item" effect="dark" content="删除" placement="top" >
             <el-button type="primary" icon="el-icon-delete" @click="deluserbyid(scope.row.id)"></el-button>
@@ -76,13 +76,72 @@
         <el-button type="primary" @click="addUserr">确 定</el-button>
       </div>
     </el-dialog>
+    <!-- 分配角色对话框 -->
+    <el-dialog title="分配角色" :visible.sync="grantdialogFormVisible">
+      <el-form :model="grantForm" :label-width="'120px'">
+        <el-form-item label="用户名">
+          <el-input v-model="grantForm.username" auto-complete="off" disabled="" style='width:100px'></el-input>
+        </el-form-item>
+        <el-form-item label="角色">
+          <el-select v-model="grantForm.rid" clearable placeholder="请选择">
+            <el-option
+              v-for="item in roleList"
+              :key="item.id"
+              :label="item.roleName"
+              :value="item.id"
+            ></el-option>
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="grantdialogFormVisible = false">取 消</el-button>
+        <el-button type="primary" @click='grantRoleSubmit'>确 定</el-button>
+      </div>
+    </el-dialog>
+    <!-- 编制用户对话框 -->
+     <el-dialog title="编辑用户" :visible.sync="editdialogFormVisible">
+      <el-form :model="editForm" :label-width="'120px'" :rules='rules' ref='editForm'>
+        <el-form-item label="用户名">
+          <el-input v-model="editForm.username" auto-complete="off" disabled="" style='width:100px'></el-input>
+        </el-form-item>
+        <el-form-item label="邮箱" prop='email'>
+          <el-input v-model="editForm.email" auto-complete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="电话" prop='mobile'>
+          <el-input v-model="editForm.mobile" auto-complete="off"></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="editdialogFormVisible = false">取 消</el-button>
+        <el-button type="primary" @click='editUserSubmit'>确 定</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 <script>
-import { getUserList, addUser, updateUserState, delUser } from '@/api/user_api.js'
+import { getUserList, addUser, updateUserState, delUser, grantUserRole, editUser } from '@/api/user_api.js'
+import { getAllRoleLlist } from '@/api/role_api.js'
 export default {
   data () {
     return {
+      // 编辑对话框
+      editdialogFormVisible: false,
+      editForm: {
+        id: '',
+        username: '',
+        email: '',
+        mobile: ''
+
+      },
+      // 分配角色弹框
+      grantdialogFormVisible: false,
+      roleList: [],
+      grantForm: {
+        username: '',
+        id: '',
+        rid: ''
+      },
+      // 添加用户弹窗
       addDialogFormVisible: false,
       // 添加用户新数据
       addForm: {
@@ -119,8 +178,81 @@ export default {
   },
   mounted () {
     this.init()
+    getAllRoleLlist()
+      .then(res => {
+        console.log(res)
+        if (res.data.meta.status === 200) {
+          this.roleList = res.data.data
+        }
+      })
   },
   methods: {
+    // 显示编辑显示框
+    showEditDialog (row) {
+      console.log(row)
+      this.editdialogFormVisible = true
+      this.editForm.id = row.id
+      this.editForm.username = row.username
+      this.editForm.email = row.email
+      this.editForm.mobile = row.mobile
+    },
+    editUserSubmit () {
+      this.$refs.editForm.validate(valid => {
+        if (valid) {
+          editUser(this.editForm)
+            .then(res => {
+              console.log(res)
+              if (res.data.meta.status === 200) {
+                this.$message({
+                  type: 'success',
+                  message: res.data.meta.msg
+                })
+                this.editdialogFormVisible = false
+                this.init()
+              }
+            })
+        } else {
+          this.$message({
+            type: 'error',
+            message: '编辑格式错误'
+          })
+        }
+      })
+    },
+    // 显示分配角色框显示
+    showGrandDialog (row) {
+      console.log(row)
+      this.grantdialogFormVisible = true
+      this.grantForm.username = row.username
+      this.grantForm.id = row.id
+      // 防御型编程
+      this.grantForm.rid = row.rid
+    },
+    // 分配用户角色
+    grantRoleSubmit () {
+      if (!this.grantForm.id) {
+        this.$message({
+          type: 'warning',
+          message: '请先选择角色'
+        })
+        return false
+      }
+      grantUserRole(this.grantForm.id, this.grantForm.rid)
+        .then(res => {
+          console.log(res)
+          if (res.data.meta.status === 200) {
+            this.$message({
+              type: 'success',
+              message: res.data.meta.msg
+
+            })
+            this.grantdialogFormVisible = false
+          }
+        })
+        .catch(err => {
+          console.log(err)
+        })
+    },
     // 删除单个用户
     deluserbyid (id) {
       this.$confirm('此操作将永久删除该用户，是否继续?', '删除提示', {
@@ -186,7 +318,7 @@ export default {
               console.log(res)
               if (res.data.meta.status === 201) {
                 this.addDialogFormVisible = false
-                this.$refs.addForm.resetFilds()
+                this.$refs.addForm.resetFields()
                 this.init()
               } else {
                 this.$message({

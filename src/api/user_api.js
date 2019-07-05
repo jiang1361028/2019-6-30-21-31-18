@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { type } from 'os'
+
 // 设置基准路径
 axios.defaults.baseURL = 'http://localhost:8888/api/private/v1/'
 // 添加拦截器
@@ -52,5 +52,23 @@ export const delUser = (id) => {
   return axios({
     method: 'delete',
     url: `users/${id}`
+  })
+}
+// 分配角色
+export const grantUserRole = (id, rid) => {
+  return axios({
+    method: 'put',
+    url: `users/${id}/role`,
+    data: { rid }
+  })
+}
+// 编辑用户
+export const editUser = (data) => {
+  return axios({
+    method: 'put',
+    url: `users/${data.id}`,
+    data: {
+      email: data.email,
+      mobile: data.mobile }
   })
 }
