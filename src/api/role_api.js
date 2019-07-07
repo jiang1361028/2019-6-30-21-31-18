@@ -20,3 +20,29 @@ export const grantRightForRole = (roleId, rids) => {
     data: { rids }
   })
 }
+// 删除角色
+export const delRightId = (id) => {
+  return axios({
+    method: 'delete',
+    url: `roles/${id}`
+  })
+}
+// 添加角色
+export const addRightRole = (data) => {
+  return axios({
+    method: 'post',
+    url: 'roles',
+    data
+  })
+}
+// 编辑角色
+export const editRightRole = (data) => {
+  return axios({
+    method: 'put',
+    url: `roles/${data.id}`,
+    data: {
+      roleName: data.roleName,
+      roleDesc: data.roleDesc
+    }
+  })
+}

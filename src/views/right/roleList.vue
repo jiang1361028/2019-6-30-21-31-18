@@ -5,7 +5,7 @@
       <el-breadcrumb-item>权限管理</el-breadcrumb-item>
       <el-breadcrumb-item>角色列表</el-breadcrumb-item>
     </el-breadcrumb>
-    <el-button type="success" plain>添加角色</el-button>
+    <el-button type="success" plain @click="addDialogFormVisible=true">添加角色</el-button>
     <el-table :data="roleList" border style="width: 100%">
         <!-- 展开栏 -->
       <el-table-column type="expand">
@@ -37,13 +37,13 @@
       <el-table-column label="操作" >
           <template slot-scope="scope">
           <el-tooltip class="item" effect="dark" content="编辑" placement="top">
-            <el-button type="primary" icon="el-icon-edit" ></el-button>
+            <el-button type="primary" icon="el-icon-edit" @click="showEditDialog(scope.row)"></el-button>
           </el-tooltip>
             <el-tooltip class="item" effect="dark" content="分配权限" placement="top">
             <el-button type="primary" icon="el-icon-more" @click="showGrantDialog(scope.row)" ></el-button>
           </el-tooltip>
           <el-tooltip class="item" effect="dark" content="删除" placement="top" >
-            <el-button type="primary" icon="el-icon-delete" ></el-button>
+            <el-button type="primary" icon="el-icon-delete" @click="deluserbyid(scope.row.id)" ></el-button>
           </el-tooltip>
         </template>
       </el-table-column>
@@ -64,14 +64,59 @@
         <el-button type="primary" @click='grantRightSubmit'>确 定</el-button>
       </div>
     </el-dialog>
+    <!-- 添加添加角色对话框 -->
+    <el-dialog title="添加角色" :visible.sync="addDialogFormVisible">
+      <el-form :model="addForm" :label-width="'80px'"  ref="addForm">
+        <el-form-item label="角色名称" prop="roleName">
+          <el-input v-model="addForm.roleName" auto-complete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="描述" prop="roleDesc">
+          <el-input v-model="addForm.roleDesc" auto-complete="off" ></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="addDialogFormVisible = false">取 消</el-button>
+        <el-button type="primary" @click="addUserr">确 定</el-button>
+      </div>
+    </el-dialog>
+    <!-- 添加编辑角色框 -->
+     <el-dialog title="编辑角色" :visible.sync="editdialogFormVisible">
+      <el-form :model="editForm" :label-width="'120px'"  ref='editForm'>
+        <el-form-item label="角色名称" prop='roleName'>
+          <el-input v-model="editForm.roleName" auto-complete="off" disabled="" style='width:100px'></el-input>
+        </el-form-item>
+        <el-form-item label="角色描述" prop='roleDesc'>
+          <el-input v-model="editForm.roleDesc" auto-complete="off"></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="editdialogFormVisible = false">取 消</el-button>
+        <el-button type="primary" @click='editUserSubmit'>确 定</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 <script>
-import { getAllRoleLlist, delRightByRoleId, grantRightForRole } from '@/api/role_api.js'
+import { getAllRoleLlist, delRightByRoleId, grantRightForRole, delRightId, addRightRole, editRightRole } from '@/api/role_api.js'
 import { getAllRightList } from '@/api/right_api.js'
 export default {
   data () {
     return {
+      // 编辑角色
+      editForm: {
+        id: '',
+        roleName: '',
+        roleDesc: ''
+      },
+      editdialogFormVisible: false,
+      // 添加角色
+      addForm: {
+        roleName: '',
+        roleDesc: ''
+      },
+      // 添加用户弹窗
+      addDialogFormVisible: false,
+      // 添加角色权限
       roleId: '',
       rightList: [],
       checkedArr: [],
@@ -86,6 +131,75 @@ export default {
   },
 
   methods: {
+    // 显示编辑框
+    showEditDialog (row) {
+      this.editdialogFormVisible = true
+      this.editForm.id = row.id
+      this.editForm.roleName = row.roleName
+      this.editForm.roleDesc = row.roleDesc
+    },
+    // 编辑提交
+    editUserSubmit () {
+      this.$refs.editForm.validate(valid => {
+        if (valid) {
+          editRightRole(this.editForm)
+            .then(res => {
+              console.log(res)
+              if (res.data.meta.status === 200) {
+                this.$message({
+                  type: 'success',
+                  message: res.data.meta.msg
+                })
+                this.editdialogFormVisible = false
+                this.init()
+              }
+            })
+        }
+      })
+    },
+    // 添加角色
+    addUserr () {
+      this.$refs.addForm.validate(valid => {
+        console.log(valid)
+        if (valid) {
+          addRightRole(this.addForm)
+            .then(res => {
+              console.log(res)
+              if (res.data.meta.status === 201) {
+                this.$message({
+                  tye: 'success',
+                  message: res.data.meta.msg
+                })
+                this.addForm.roleName = ''
+                this.addForm.roleDesc = ''
+                this.addDialogFormVisible = false
+                this.init()
+              }
+            })
+        }
+      })
+    },
+    // 删除角色
+    deluserbyid (id) {
+      this.$confirm('此操作将永久删除该用户，是否继续?', '删除提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+        .then(() => {
+          delRightId(id)
+            .then(res => {
+              console.log(res)
+              if (res.data.meta.status === 200) {
+                this.$message({
+                  type: 'success',
+                  message: res.data.meta.msg
+                })
+                this.init()
+              }
+            })
+        })
+    },
     //   给用户添加权限
     grantRightSubmit () {
       // 把对象字符串转换成数组去重
