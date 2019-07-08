@@ -4,3 +4,9 @@ export const getAllRightList = (type) => {
     url: `rights/${type}`
   })
 }
+// 获取左侧菜单栏
+export const getLeftMenuList = () => {
+  return axios({
+    url: 'menus'
+  })
+}

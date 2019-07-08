@@ -28,7 +28,7 @@
       <el-table-column label="用户状态" width="100">
         <template slot-scope="scope">
           <el-switch v-model="scope.row.mg_state" active-color="#13ce66" inactive-color="#ff4949"
-          @change="changeUserState(scope.row.id,scope.row.msg_state)"></el-switch>
+          @change="changeUserState(scope.row.id,scope.row.mg_state)"></el-switch>
         </template>
       </el-table-column>
       <el-table-column label="操作">

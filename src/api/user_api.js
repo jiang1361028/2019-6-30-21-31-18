@@ -44,7 +44,6 @@ export const updateUserState = (uid, type) => {
   return axios({
     method: 'put',
     url: `users/${uid}/state/${type}`
-
   })
 }
 // 删除用户
